@@ -19,6 +19,7 @@
 
 .cItem {
 	margin: 0 0 0 10px;
+	
 	float:left;
 }
 
@@ -27,6 +28,7 @@
 	border: 1px solid #e0e0e0;
 	padding: 7px;
 	color:#333;
+	border-radius: 3px;
 }
 
 
@@ -41,6 +43,7 @@
 	background-color:#333;
 	border: 1px solid #000;
 	float:left;
+	border-radius: 3px;
 }
 
 .checkBtn:hover {
@@ -53,7 +56,8 @@
 	color:#333;
 	font-size: 15px;
 	border: 1px solid #e0e0e0;
-	box-shadow: 0px 1px 2px 0px #ccc;
+	
+	border-radius: 3px;
 }
 
 .removeLinkBtn {
@@ -62,5 +66,16 @@
 	color:#333;
 	font-size: 15px;
 	border: 1px solid #e0e0e0;
-	box-shadow: 0px 1px 2px 0px #ccc;
+	
+	border-radius: 3px;
+}
+
+.removePointBtn {
+	cursor: pointer;
+	padding: 5px 10px;
+	color:#333;
+	font-size: 15px;
+	border: 1px solid #e0e0e0;
+	
+	border-radius: 3px;
 }

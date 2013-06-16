@@ -23,6 +23,9 @@ var linkBoo = false;
 //removeLink btn
 var removeLinkObj;
 
+//removePoint btn
+var removePointObj;
+
 //point click
 var pointClickObj;
 
@@ -103,6 +106,7 @@ $(function() {
 		//alert("add line");
 		ACTION = ADD_LINK;
 		linkBoo = true;
+		addLinkObj = pointClickObj;
 		$(".msg").text("請選擇節點");
 	})
 	
@@ -111,6 +115,13 @@ $(function() {
 		//記錄目前所點選的節點
 		ACTION = REMOVE_LINK;
 		removeLinkObj = pointClickObj;
+	})
+	
+	//removePoint
+	$(".removePointBtn").click(function() {
+		//記錄目前所點選的節點
+		removePointObj = pointClickObj;
+		removePoint();
 	})
 	
 	
@@ -181,77 +192,80 @@ function setPointVar() {
 }
 
 function pointLinkObj(obj) {
+	link1Obj = addLinkObj;
+	$(".msg").text("從目前的節點連結到？");
+	//linkObjIndex++;
+	
+	$(link1Obj).css({
+		'background' : '#f0f0f0'
+	})
+	
+	if($(obj).is(link1Obj))
+	{
+		alert("請勿選擇自己");
+	}
+	else
+	{
+		//判斷是否已連結過
+		link2Obj = $(obj);
+		var isExist = false;
+		var p1_lid = $(link1Obj).attr("lid");
+		var p2_lid = $(link2Obj).attr("lid");
+		
+		//alert(p1_lid + " " + p2_lid);
+		if((p1_lid != undefined && p2_lid != undefined) && (p1_lid != "" && p2_lid != ""))
+		{
+			var p1_lidAry = p1_lid.split(",");
+			var p2_lidAry = p2_lid.split(",");
+			
+			for(var i = 0; i < p1_lidAry.length; i++)
+			{
+				for(var j = 0; j < p2_lidAry.length; j++)
+				{
+					if(p1_lidAry[i] == p2_lidAry[j]	)
+					{
+						isExist = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		if(isExist)
+		{
+			alert("兩點已連結過");
+		}
+		else
+		{
+			
+			$(".msg").text("已連結到此結點, 連結完畢");
+			addLine(link1Obj, link2Obj);
+		}
+		
+		//reset
+		$(link1Obj).css({
+			'background-color' : '#fff'
+		})
+		$(link2Obj).css({
+			'background-color' : '#fff'
+		})
+		
+		//clear
+		linkBoo = false;
+		//linkObjIndex = 0;
+		link1Obj = null;
+		link2Obj = null;
+		isExist = false;
+		ACTION = NO_ACTION;
+	}
 	
 	switch(linkObjIndex)
 	{
 		case 0:
-			link1Obj = $(obj);
-			$(".msg").text("從目前的節點連結到？");
-			linkObjIndex++;
 			
-			$(link1Obj).css({
-				'background' : '#f0f0f0'
-			})
 		break;
 		case 1:
-			if($(obj).is(link1Obj))
-			{
-				alert("請勿選擇自己");
-			}
-			else
-			{
-				//判斷是否已連結過
-				link2Obj = $(obj);
-				var isExist = false;
-				var p1_lid = $(link1Obj).attr("lid");
-				var p2_lid = $(link2Obj).attr("lid");
-				
-				alert(p1_lid + " " + p2_lid);
-				if((p1_lid != undefined && p2_lid != undefined) && (p1_lid != "" && p2_lid != ""))
-				{
-					var p1_lidAry = p1_lid.split(",");
-					var p2_lidAry = p2_lid.split(",");
-					
-					for(var i = 0; i < p1_lidAry.length; i++)
-					{
-						for(var j = 0; j < p2_lidAry.length; j++)
-						{
-							if(p1_lidAry[i] == p2_lidAry[j]	)
-							{
-								isExist = true;
-								break;
-							}
-						}
-					}
-				}
-				
-				if(isExist)
-				{
-					alert("兩點已連結過");
-				}
-				else
-				{
-					
-					$(".msg").text("已連結到此結點, 連結完畢");
-					addLine(link1Obj, link2Obj);
-				}
-				
-				//reset
-				$(link1Obj).css({
-					'background-color' : '#fff'
-				})
-				$(link2Obj).css({
-					'background-color' : '#fff'
-				})
-				
-				//clear
-				linkBoo = false;
-				linkObjIndex = 0;
-				link1Obj = null;
-				link2Obj = null;
-				isExist = false;
-				ACTION = NO_ACTION;
-			}
+			
 		break;
 	}
 	
@@ -270,7 +284,7 @@ function removeLink(obj) {
 	var p1_lidAry;
 	var p2_lidAry
 	
-	alert("lid:" + p1_lid + " / " + p2_lid);
+	//alert("lid:" + p1_lid + " / " + p2_lid);
 	
 	if(p1_lid != undefined && p2_lid != undefined)
 	{
@@ -291,8 +305,6 @@ function removeLink(obj) {
 		}
 	}
 	
-	alert("line id:" + line_id);
-	
 	if(isExist)
 	{
 		//刪除線
@@ -308,7 +320,7 @@ function removeLink(obj) {
 			{
 				//刪除陣列裡匹配到的元素
 				p1_ary.push(p1_lidAry[i]);
-				break;
+				
 			}
 		}
 		
@@ -317,13 +329,13 @@ function removeLink(obj) {
 			if(p2_lidAry[i] != line_id)
 			{
 				p2_ary.push(p2_lidAry[i]);
-				break;
+				
 			}
 		}
 				
 		//重新將篩選過的lid加回去point
-		alert(p1_ary);
-		alert(p2_ary);
+		//alert(p1_ary);
+		//alert(p2_ary);
 		
 		
 		$(p1_obj).attr("lid", p1_ary.join());
@@ -332,8 +344,63 @@ function removeLink(obj) {
 		ACTION = NO_ACTION;
 		
 	}
+	else
+	{
+		alert("與對象並無關聯");
+		ACTION = NO_ACTION;
+	}
 	
 }
+
+function removePoint() {
+	//line 的tid 已經改為一定是對象
+	
+
+	
+	var p = removePointObj;
+	var p_id = $(p).attr("lid");
+	
+	var lid_ary = p_id.split(",");
+	
+	for(var i = 0; i < lid_ary.length; i++)
+	{
+		var line_obj = $(".line[lid=" + lid_ary[i] + "]");
+		
+		
+		$(".point").each(function() {
+			var p_lid = $(this).attr("lid");
+			var p_lid_ary = p_lid.split(",");
+			var ary = new Array(0);
+			
+			for(var j = 0; j < p_lid_ary.length; j++)
+			{
+				if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+				{
+					
+					ary.push(p_lid_ary[j]);
+				}
+			}
+			
+			if(ary.join() == "")
+			{
+				$(this).removeAttr("lid");
+			}
+			else
+			{
+				$(this).attr("lid", ary.join());
+			}
+			
+			
+		})
+		
+		$(line_obj).remove();
+		
+	}
+	
+	$(p).remove();
+	
+}
+
 
 
 function addLine(childObj, targetObj)
