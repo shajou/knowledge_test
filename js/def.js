@@ -23,8 +23,13 @@ var linkBoo = false;
 //removeLink btn
 var removeLinkObj;
 
+//removeChildLink btn
+var removeChildLinkObj;
+
 //removePoint btn
 var removePointObj;
+
+
 
 //point click
 var pointClickObj;
@@ -34,12 +39,21 @@ var lineIndex = 0;
 var link1Obj;
 var link2Obj;
 var linkObjIndex = 0;
+var addLinkObj;
+
+//addChildLine
+var addChildLinkObj;
+var childLink1Obj;
+var childLink2Obj;
+
 
 //statu
 var ACTION = 0;
 var NO_ACTION = 0
 var ADD_LINK = 1;
-var REMOVE_LINK = 2;
+var ADD_CHILD_LINK = 2
+var REMOVE_LINK = 3;
+var REMOVE_CHILD_LINK = 4;
 
 $(function() {
 	
@@ -77,20 +91,32 @@ $(function() {
 		if(dragBoo)
 		{
 			var lid = $(thisPointObj).attr("lid");
+			var ch_lid = $(thisPointObj).attr("ch_lid");
 			
-			$(".debug").text("lid: " + lid + " thisPointObj " + thisPointObj)	;	
-			//alert(lid);
+			//$(".debug").text("lid: " + lid + " thisPointObj " + thisPointObj);
+			
 			if(lid != undefined)
 			{
 				var lidAry = lid.split(",");
-				//alert(lidAry);
+				
+				
 				for(var i = 0; i < lidAry.length; i++)
 				{
 					var lineObj = $(".line[lid=" + lidAry[i] + "]");
-					//fixX = ($(lineObj).width() - $(".point").width()) * 0.5;
 					setLine(lidAry[i], $(lineObj).attr("cid"), $(lineObj).attr("tid"));
 				}
 				
+			}
+			
+			if(ch_lid != undefined)
+			{
+				var ch_lidAry = ch_lid.split(",");
+				
+				for(var i = 0; i < ch_lidAry.length; i++)
+				{
+					var ch_lineObj = $(".line[ch_lid=" + ch_lidAry[i] + "]");
+					setChildLine(ch_lidAry[i], $(ch_lineObj).attr("cid"), $(ch_lineObj).attr("tid"));
+				}
 			}
 			
 			setDrag();
@@ -110,11 +136,24 @@ $(function() {
 		$(".msg").text("請選擇節點");
 	})
 	
+	$(".linkChildBtn").click(function() {
+		//alert("add line");
+		ACTION = ADD_CHILD_LINK;
+		linkBoo = true;
+		addChildLinkObj = pointClickObj;
+		$(".msg").text("請選擇節點");
+	})
+	
 	//removeLink
 	$(".removeLinkBtn").click(function() {
 		//記錄目前所點選的節點
 		ACTION = REMOVE_LINK;
 		removeLinkObj = pointClickObj;
+	})
+	
+	$(".removeChildLinkBtn").click(function() {
+		ACTION = REMOVE_CHILD_LINK;
+		removeChildLinkObj = pointClickObj;
 	})
 	
 	//removePoint
@@ -157,11 +196,19 @@ function pointClick(obj) {
 				pointLinkObj(obj);
 				
 			}
-			
+		break;
+		case ADD_CHILD_LINK:
+			if(linkBoo == true)
+			{
+				pointChildLinkObj(obj);
+				
+			}
 		break;
 		case REMOVE_LINK:
 			removeLink(obj);
-			
+			break;
+		case REMOVE_CHILD_LINK:
+			removeChildLink(obj);
 		break;
 	}
 	
@@ -178,7 +225,7 @@ function pointClick(obj) {
 	pointClickObj = $(obj);
 	setControlVar(obj);
 	
-	$(".debug").text("poinClick: " + $(thisPointObj).attr("pid") + " lid: " + $(thisPointObj).attr("lid"));	
+	//$(".debug").text("poinClick: " + $(thisPointObj).attr("pid") + " lid: " + $(thisPointObj).attr("lid"));	
 }
 
 function setControlVar(obj) {
@@ -258,21 +305,77 @@ function pointLinkObj(obj) {
 		isExist = false;
 		ACTION = NO_ACTION;
 	}
-	
-	switch(linkObjIndex)
-	{
-		case 0:
-			
-		break;
-		case 1:
-			
-		break;
-	}
-	
-	
-	$(".debug").text("linkObjIndex: " + linkObjIndex);
-	
 }
+
+function pointChildLinkObj(obj) {
+	childLink1Obj = addChildLinkObj;
+	$(".msg").text("從目前的節點連結到？");
+	//linkObjIndex++;
+	
+	$(childLink1Obj).css({
+		'background' : '#f0f0f0'
+	})
+	
+	if($(obj).is(childLink1Obj))
+	{
+		alert("請勿選擇自己");
+	}
+	else
+	{
+		//判斷是否已連結過
+		childLink2Obj = $(obj);
+		var isExist = false;
+		var p1_lid = $(childLink1Obj).attr("lid");
+		var p2_lid = $(childLink2Obj).attr("lid");
+		
+		//alert(p1_lid + " " + p2_lid);
+		if((p1_lid != undefined && p2_lid != undefined) && (p1_lid != "" && p2_lid != ""))
+		{
+			var p1_lidAry = p1_lid.split(",");
+			var p2_lidAry = p2_lid.split(",");
+			
+			for(var i = 0; i < p1_lidAry.length; i++)
+			{
+				for(var j = 0; j < p2_lidAry.length; j++)
+				{
+					if(p1_lidAry[i] == p2_lidAry[j]	)
+					{
+						isExist = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		if(isExist)
+		{
+			alert("兩點已連結過");
+		}
+		else
+		{
+			
+			$(".msg").text("已連結到此結點, 連結完畢");
+			addChildLine(childLink1Obj, childLink2Obj);
+		}
+		
+		//reset
+		$(childLink1Obj).css({
+			'background-color' : '#fff'
+		})
+		$(childLink2Obj).css({
+			'background-color' : '#fff'
+		})
+		
+		//clear
+		linkBoo = false;
+		//linkObjIndex = 0;
+		childLink1Obj = null;
+		childLink2Obj = null;
+		isExist = false;
+		ACTION = NO_ACTION;
+	}
+}
+
 
 function removeLink(obj) {
 	var p1_obj = removeLinkObj;
@@ -284,7 +387,6 @@ function removeLink(obj) {
 	var p1_lidAry;
 	var p2_lidAry
 	
-	//alert("lid:" + p1_lid + " / " + p2_lid);
 	
 	if(p1_lid != undefined && p2_lid != undefined)
 	{
@@ -332,11 +434,6 @@ function removeLink(obj) {
 				
 			}
 		}
-				
-		//重新將篩選過的lid加回去point
-		//alert(p1_ary);
-		//alert(p2_ary);
-		
 		
 		$(p1_obj).attr("lid", p1_ary.join());
 		$(p2_obj).attr("lid", p2_ary.join());
@@ -352,10 +449,83 @@ function removeLink(obj) {
 	
 }
 
+
+function removeChildLink(obj) {
+	var p1_obj = removeChildLinkObj;
+	var p2_obj = obj;
+	var p1_lid = $(removeChildLinkObj).attr("ch_lid");
+	var p2_lid = $(obj).attr("ch_lid");
+	var line_id = 0;
+	var isExist = false;
+	var p1_lidAry;
+	var p2_lidAry
+	
+	
+	if(p1_lid != undefined && p2_lid != undefined)
+	{
+		p1_lidAry = p1_lid.split(",");
+		p2_lidAry = p2_lid.split(",");
+		
+		for(var i = 0; i < p1_lidAry.length; i++)
+		{
+			for(var j = 0; j < p2_lidAry.length; j++)
+			{
+				if(p1_lidAry[i] == p2_lidAry[j]	)
+				{
+					line_id = p1_lidAry[i];
+					isExist = true;
+					break;
+				}
+			}
+		}
+	}
+	
+	if(isExist)
+	{
+		//刪除線
+		$(".line[ch_lid=" + line_id + "]").remove();
+		
+		//取消關聯
+		var p1_ary = new Array(0);
+		var p2_ary = new Array(0);
+		
+		for(var i = 0; i < p1_lidAry.length; i++)
+		{
+			if(p1_lidAry[i] != line_id)
+			{
+				//刪除陣列裡匹配到的元素
+				p1_ary.push(p1_lidAry[i]);
+				
+			}
+		}
+		
+		for(var i = 0; i < p2_lidAry.length; i++)
+		{
+			if(p2_lidAry[i] != line_id)
+			{
+				p2_ary.push(p2_lidAry[i]);
+				
+			}
+		}
+		
+		$(p1_obj).attr("ch_lid", p1_ary.join());
+		$(p2_obj).attr("ch_lid", p2_ary.join());
+		
+		ACTION = NO_ACTION;
+		
+	}
+	else
+	{
+		alert("與對象並無關聯");
+		ACTION = NO_ACTION;
+	}
+	
+}
+
 function removePoint() {
 	//line 的tid 已經改為一定是對象
 	
-
+	//lid
 	
 	var p = removePointObj;
 	var p_id = $(p).attr("lid");
@@ -369,28 +539,32 @@ function removePoint() {
 		
 		$(".point").each(function() {
 			var p_lid = $(this).attr("lid");
-			var p_lid_ary = p_lid.split(",");
-			var ary = new Array(0);
 			
-			for(var j = 0; j < p_lid_ary.length; j++)
+			if(p_lid != undefined && p_lid != "")
 			{
-				if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+			
+				var p_lid_ary = p_lid.split(",");
+				var ary = new Array(0);
+				
+				for(var j = 0; j < p_lid_ary.length; j++)
 				{
-					
-					ary.push(p_lid_ary[j]);
+					if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+					{
+						
+						ary.push(p_lid_ary[j]);
+					}
 				}
-			}
+				
+				if(ary.join() == "")
+				{
+					$(this).removeAttr("lid");
+				}
+				else
+				{
+					$(this).attr("lid", ary.join());
+				}
 			
-			if(ary.join() == "")
-			{
-				$(this).removeAttr("lid");
 			}
-			else
-			{
-				$(this).attr("lid", ary.join());
-			}
-			
-			
 		})
 		
 		$(line_obj).remove();
@@ -399,6 +573,50 @@ function removePoint() {
 	
 	$(p).remove();
 	
+	//ch lid
+	var p = removePointObj;
+	var p_id = $(p).attr("ch_lid");
+	
+	var lid_ary = p_id.split(",");
+	
+	for(var i = 0; i < lid_ary.length; i++)
+	{
+		var line_obj = $(".line[ch_lid=" + lid_ary[i] + "]");
+		
+		
+		$(".point").each(function() {
+			var p_lid = $(this).attr("ch_lid");
+			
+			if(p_lid != undefined && p_lid != "")
+			{
+				var p_lid_ary = p_lid.split(",");
+				var ary = new Array(0);
+				
+				for(var j = 0; j < p_lid_ary.length; j++)
+				{
+					if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+					{
+						
+						ary.push(p_lid_ary[j]);
+					}
+				}
+				
+				if(ary.join() == "")
+				{
+					$(this).removeAttr("ch_lid");
+				}
+				else
+				{
+					$(this).attr("ch_lid", ary.join());
+				}
+			
+			}
+		})
+		
+		$(line_obj).remove();
+		
+	}
+	$(p).remove();
 }
 
 
@@ -444,9 +662,52 @@ function addLine(childObj, targetObj)
 	
 }
 
+
+function addChildLine(childObj, targetObj)
+{
+	
+	var cid = $(childObj).attr("pid");
+	var tid = $(targetObj).attr("pid");
+	var c_lid = $(childObj).attr("ch_lid");
+	var t_lid = $(targetObj).attr("ch_lid");
+	
+	//alert(t_lid);
+	if(t_lid != undefined && t_lid != "")
+	{
+		t_lid += "," + lineIndex;
+	}
+	else
+	{
+		t_lid = lineIndex;
+	}
+	
+	if(c_lid != undefined && c_lid != "")
+	{
+		c_lid += "," + lineIndex;
+	}
+	else
+	{
+		c_lid = lineIndex;
+	}
+	
+	
+	$(".canvas").append(
+		"<div class='line chLine' ch_lid='" + lineIndex + "' cid='" + cid + "' tid='" + tid + "'  ></div>"
+	);
+	
+	$(childObj).attr("ch_lid", c_lid);
+	$(targetObj).attr("ch_lid", t_lid);
+	setChildLine(lineIndex, cid, tid);
+	
+	lineIndex++;
+	linkBoo = false;
+	
+}
+
+
+
 function setLine(lineId, p1, p2) {
 	var line = $(".line[lid=" + lineId + "]");
-	
 		
 	var p1obj = $(".point[pid=" + p1 + "]");
 	var p2obj = $(".point[pid=" + p2 + "]");
@@ -463,8 +724,29 @@ function setLine(lineId, p1, p2) {
 		'transform' : 'rotate(' + get2PointZRotate($(p1obj), $(p2obj)) + 'deg)'
 	})
 	
-	//alert("set line: " + lineId + " " + p1 + " " + p2 );
 }
+
+function setChildLine(lineId, p1, p2) {
+	var line = $(".line[ch_lid=" + lineId + "]");
+		
+	var p1obj = $(".point[pid=" + p1 + "]");
+	var p2obj = $(".point[pid=" + p2 + "]");
+	
+	$(line).css({
+		'width' : get2PointDist($(p1obj), $(p2obj))
+	})
+	
+	var lineW = get2PointDist($(p1obj), $(p2obj));
+					
+	$(line).css({
+		'left' : get2PointXCenter($(p1obj), $(p2obj)) - getFixX(line) + ($(".p1obj").width() * 0.5 ),
+		'top' : get2PointYCenter($(p1obj), $(p2obj)),
+		'transform' : 'rotate(' + get2PointZRotate($(p1obj), $(p2obj)) + 'deg)'
+	})
+	
+}
+
+
 
 /**
  * @param obj = Object
