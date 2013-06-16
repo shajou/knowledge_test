@@ -20,6 +20,9 @@ var thisPointObj;
 //link btn
 var linkBoo = false;
 
+//removeLink btn
+var removeLinkObj;
+
 //point click
 var pointClickObj;
 
@@ -28,6 +31,12 @@ var lineIndex = 0;
 var link1Obj;
 var link2Obj;
 var linkObjIndex = 0;
+
+//statu
+var ACTION = 0;
+var NO_ACTION = 0
+var ADD_LINK = 1;
+var REMOVE_LINK = 2;
 
 $(function() {
 	
@@ -49,6 +58,7 @@ $(function() {
 	
 	//add point
 	$(".addPointBtn").click(function() {
+		
 		addPointObj();
 	})
 	
@@ -91,9 +101,25 @@ $(function() {
 	
 	$(".linkBtn").click(function() {
 		//alert("add line");
+		ACTION = ADD_LINK;
 		linkBoo = true;
 		$(".msg").text("請選擇節點");
 	})
+	
+	//removeLink
+	$(".removeLinkBtn").click(function() {
+		//記錄目前所點選的節點
+		ACTION = REMOVE_LINK;
+		removeLinkObj = pointClickObj;
+	})
+	
+	
+	//check btn
+	$(".checkBtn").click(function() {
+		setPointVar();
+	})
+	
+	
 	
 })
 
@@ -111,12 +137,24 @@ function mouseUp(){
 };
 
 function pointClick(obj) {
-	if(linkBoo == true)
+	
+	switch(ACTION)
 	{
-		pointLinkObj(obj);
+		case ADD_LINK:
+			if(linkBoo == true)
+			{
+				pointLinkObj(obj);
+				
+			}
+			
+		break;
+		case REMOVE_LINK:
+			removeLink(obj);
+			
+		break;
 	}
 	
-	
+		
 	//set select this obj css
 	$(".drag").css({
 		'border-width' : '1px'
@@ -124,10 +162,22 @@ function pointClick(obj) {
 	$(obj).css({
 		'border-width' : '3px'
 	})
-		
+	
+	//pointClickObj 
 	pointClickObj = $(obj);
+	setControlVar(obj);
 	
 	$(".debug").text("poinClick: " + $(thisPointObj).attr("pid") + " lid: " + $(thisPointObj).attr("lid"));	
+}
+
+function setControlVar(obj) {
+	$(".pointText").val($(obj).text());
+}
+
+function setPointVar() {
+	$(pointClickObj).text(
+		$(".pointText").val()
+	)
 }
 
 function pointLinkObj(obj) {
@@ -156,8 +206,8 @@ function pointLinkObj(obj) {
 				var p1_lid = $(link1Obj).attr("lid");
 				var p2_lid = $(link2Obj).attr("lid");
 				
-				//alert(p1_lid + " " + p2_lid);
-				if(p1_lid != undefined && p2_lid != undefined)
+				alert(p1_lid + " " + p2_lid);
+				if((p1_lid != undefined && p2_lid != undefined) && (p1_lid != "" && p2_lid != ""))
 				{
 					var p1_lidAry = p1_lid.split(",");
 					var p2_lidAry = p2_lid.split(",");
@@ -199,14 +249,89 @@ function pointLinkObj(obj) {
 				linkObjIndex = 0;
 				link1Obj = null;
 				link2Obj = null;
-				
+				isExist = false;
+				ACTION = NO_ACTION;
 			}
-			
 		break;
 	}
 	
 	
 	$(".debug").text("linkObjIndex: " + linkObjIndex);
+	
+}
+
+function removeLink(obj) {
+	var p1_obj = removeLinkObj;
+	var p2_obj = obj;
+	var p1_lid = $(removeLinkObj).attr("lid");
+	var p2_lid = $(obj).attr("lid");
+	var line_id = 0;
+	var isExist = false;
+	var p1_lidAry;
+	var p2_lidAry
+	
+	alert("lid:" + p1_lid + " / " + p2_lid);
+	
+	if(p1_lid != undefined && p2_lid != undefined)
+	{
+		p1_lidAry = p1_lid.split(",");
+		p2_lidAry = p2_lid.split(",");
+		
+		for(var i = 0; i < p1_lidAry.length; i++)
+		{
+			for(var j = 0; j < p2_lidAry.length; j++)
+			{
+				if(p1_lidAry[i] == p2_lidAry[j]	)
+				{
+					line_id = p1_lidAry[i];
+					isExist = true;
+					break;
+				}
+			}
+		}
+	}
+	
+	alert("line id:" + line_id);
+	
+	if(isExist)
+	{
+		//刪除線
+		$(".line[lid=" + line_id + "]").remove();
+		
+		//取消關聯
+		var p1_ary = new Array(0);
+		var p2_ary = new Array(0);
+		
+		for(var i = 0; i < p1_lidAry.length; i++)
+		{
+			if(p1_lidAry[i] != line_id)
+			{
+				//刪除陣列裡匹配到的元素
+				p1_ary.push(p1_lidAry[i]);
+				break;
+			}
+		}
+		
+		for(var i = 0; i < p2_lidAry.length; i++)
+		{
+			if(p2_lidAry[i] != line_id)
+			{
+				p2_ary.push(p2_lidAry[i]);
+				break;
+			}
+		}
+				
+		//重新將篩選過的lid加回去point
+		alert(p1_ary);
+		alert(p2_ary);
+		
+		
+		$(p1_obj).attr("lid", p1_ary.join());
+		$(p2_obj).attr("lid", p2_ary.join());
+		
+		ACTION = NO_ACTION;
+		
+	}
 	
 }
 
@@ -220,7 +345,7 @@ function addLine(childObj, targetObj)
 	var t_lid = $(targetObj).attr("lid");
 	
 	//alert(t_lid);
-	if(t_lid != undefined)
+	if(t_lid != undefined && t_lid != "")
 	{
 		t_lid += "," + lineIndex;
 	}
@@ -229,7 +354,7 @@ function addLine(childObj, targetObj)
 		t_lid = lineIndex;
 	}
 	
-	if(c_lid != undefined)
+	if(c_lid != undefined && c_lid != "")
 	{
 		c_lid += "," + lineIndex;
 	}
@@ -427,7 +552,7 @@ function hitTest(obj) {
 function addPointObj() {
 	
 	$(".canvas").append(
-		"<div class='drag point' style='left:" + (($(document).width() * 0.5) - 50) + "px;top: " + (($(document).height() * 0.5) - 50) + "px' onclick='pointClick(this)'  pid='" + pointObjIndex + "'></div>"
+		"<div class='drag point' style='left:" + (($(document).width() * 0.5) - ($(".drag").width() * 0.5)) + "px;top: " + (($(document).height() * 0.5) -($(".drag").height() * 0.5)) + "px' onclick='pointClick(this)'  pid='" + pointObjIndex + "'></div>"
 	)
 	
 	$(".drag").bind("mousedown", mouseDown);

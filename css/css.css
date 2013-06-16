@@ -60,6 +60,8 @@ body {
 	color:#5a9ee9;
 	font-size: 15px;
 	font-family: arial;
+	
+	
 }
 
 .drag:hover {
@@ -76,6 +78,7 @@ body {
 
 .point {
 	border: 1px solid #89baef;
+	border-radius: 100px;
 }
 
 
