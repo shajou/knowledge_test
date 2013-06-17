@@ -121,7 +121,7 @@ $(function() {
 			
 			setDrag();
 			
-			hitTest(thisPointObj);
+			//hitTest(thisPointObj);
 		}
 	})
 	
@@ -169,7 +169,13 @@ $(function() {
 		setPointVar();
 	})
 	
+	$(".upPosBtn").click(function() {
+		displayUpPos();
+	})
 	
+	$(".downPosBtn").click(function() {
+		displayDownPos();
+	})
 	
 })
 
@@ -259,11 +265,32 @@ function pointLinkObj(obj) {
 		var p1_lid = $(link1Obj).attr("lid");
 		var p2_lid = $(link2Obj).attr("lid");
 		
-		//alert(p1_lid + " " + p2_lid);
 		if((p1_lid != undefined && p2_lid != undefined) && (p1_lid != "" && p2_lid != ""))
 		{
 			var p1_lidAry = p1_lid.split(",");
 			var p2_lidAry = p2_lid.split(",");
+			
+			for(var i = 0; i < p1_lidAry.length; i++)
+			{
+				for(var j = 0; j < p2_lidAry.length; j++)
+				{
+					if(p1_lidAry[i] == p2_lidAry[j]	)
+					{
+						isExist = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		//var p1_ch_lid = $(link1Obj).attr("ch_lid");
+		var p1_ch_lid = $(link1Obj).attr("ch_lid");
+		var p2_ch_lid = $(link2Obj).attr("ch_lid");
+		
+		if((p1_ch_lid != undefined && p2_ch_lid != undefined) && (p1_ch_lid != "" && p2_ch_lid != ""))
+		{
+			var p1_lidAry = p1_ch_lid.split(",");
+			var p2_lidAry = p2_ch_lid.split(",");
 			
 			for(var i = 0; i < p1_lidAry.length; i++)
 			{
@@ -304,6 +331,8 @@ function pointLinkObj(obj) {
 		link2Obj = null;
 		isExist = false;
 		ACTION = NO_ACTION;
+		
+		
 	}
 }
 
@@ -325,8 +354,8 @@ function pointChildLinkObj(obj) {
 		//判斷是否已連結過
 		childLink2Obj = $(obj);
 		var isExist = false;
-		var p1_lid = $(childLink1Obj).attr("lid");
-		var p2_lid = $(childLink2Obj).attr("lid");
+		var p1_lid = $(childLink1Obj).attr("ch_lid");
+		var p2_lid = $(childLink2Obj).attr("ch_lid");
 		
 		//alert(p1_lid + " " + p2_lid);
 		if((p1_lid != undefined && p2_lid != undefined) && (p1_lid != "" && p2_lid != ""))
@@ -341,6 +370,26 @@ function pointChildLinkObj(obj) {
 					if(p1_lidAry[i] == p2_lidAry[j]	)
 					{
 						isExist = true;
+						//alert("1");
+						break;
+					}
+				}
+			}
+		}
+		
+		var p1_m_lid = $(childLink1Obj).attr("lid");
+		var p2_m_lid = $(childLink2Obj).attr("lid");
+		if((p1_m_lid != undefined && p2_m_lid != undefined) && (p1_m_lid != "" && p2_m_lid != "")) {
+			var ary1 = p1_m_lid.split(",");
+			var ary2 = p2_m_lid.split(",");
+			for(var i = 0; i < ary1.length; i++)
+			{
+				for(var j = 0; j < ary2.length; j++)
+				{
+					if(ary1[i] == ary2[j]	)
+					{
+						isExist = true;
+						alert("2");
 						break;
 					}
 				}
@@ -374,6 +423,11 @@ function pointChildLinkObj(obj) {
 		isExist = false;
 		ACTION = NO_ACTION;
 	}
+	
+	//----
+	//link
+	//----
+	//pointLinkObj(obj);
 }
 
 
@@ -530,91 +584,97 @@ function removePoint() {
 	var p = removePointObj;
 	var p_id = $(p).attr("lid");
 	
-	var lid_ary = p_id.split(",");
-	
-	for(var i = 0; i < lid_ary.length; i++)
+	if(p_id != undefined && p_id != "")
 	{
-		var line_obj = $(".line[lid=" + lid_ary[i] + "]");
-		
-		
-		$(".point").each(function() {
-			var p_lid = $(this).attr("lid");
+		var lid_ary = p_id.split(",");
+		for(var i = 0; i < lid_ary.length; i++)
+		{
+			var line_obj = $(".line[lid=" + lid_ary[i] + "]");
 			
-			if(p_lid != undefined && p_lid != "")
-			{
 			
-				var p_lid_ary = p_lid.split(",");
-				var ary = new Array(0);
+			$(".point").each(function() {
+				var p_lid = $(this).attr("lid");
 				
-				for(var j = 0; j < p_lid_ary.length; j++)
+				if(p_lid != undefined && p_lid != "")
 				{
-					if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+				
+					var p_lid_ary = p_lid.split(",");
+					var ary = new Array(0);
+					
+					for(var j = 0; j < p_lid_ary.length; j++)
 					{
-						
-						ary.push(p_lid_ary[j]);
+						if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+						{
+							
+							ary.push(p_lid_ary[j]);
+						}
 					}
-				}
+					
+					if(ary.join() == "")
+					{
+						$(this).removeAttr("lid");
+					}
+					else
+					{
+						$(this).attr("lid", ary.join());
+					}
 				
-				if(ary.join() == "")
-				{
-					$(this).removeAttr("lid");
 				}
-				else
-				{
-					$(this).attr("lid", ary.join());
-				}
+			})
 			
-			}
-		})
-		
-		$(line_obj).remove();
+			$(line_obj).remove();
+			
+		}
 		
 	}
-	
 	$(p).remove();
 	
 	//ch lid
 	var p = removePointObj;
 	var p_id = $(p).attr("ch_lid");
 	
-	var lid_ary = p_id.split(",");
-	
-	for(var i = 0; i < lid_ary.length; i++)
+	if(p_id != undefined && p_id != "")
 	{
-		var line_obj = $(".line[ch_lid=" + lid_ary[i] + "]");
+		var lid_ary = p_id.split(",");
 		
-		
-		$(".point").each(function() {
-			var p_lid = $(this).attr("ch_lid");
+		for(var i = 0; i < lid_ary.length; i++)
+		{
+			var line_obj = $(".line[ch_lid=" + lid_ary[i] + "]");
 			
-			if(p_lid != undefined && p_lid != "")
-			{
-				var p_lid_ary = p_lid.split(",");
-				var ary = new Array(0);
+			
+			$(".point").each(function() {
+				var p_lid = $(this).attr("ch_lid");
 				
-				for(var j = 0; j < p_lid_ary.length; j++)
+				if(p_lid != undefined && p_lid != "")
 				{
-					if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+					var p_lid_ary = p_lid.split(",");
+					var ary = new Array(0);
+					
+					for(var j = 0; j < p_lid_ary.length; j++)
 					{
-						
-						ary.push(p_lid_ary[j]);
+						if(p_lid_ary[j] != lid_ary[i] && p_lid_ary[j] != "")
+						{
+							
+							ary.push(p_lid_ary[j]);
+						}
 					}
-				}
+					
+					if(ary.join() == "")
+					{
+						$(this).removeAttr("ch_lid");
+					}
+					else
+					{
+						$(this).attr("ch_lid", ary.join());
+					}
 				
-				if(ary.join() == "")
-				{
-					$(this).removeAttr("ch_lid");
 				}
-				else
-				{
-					$(this).attr("ch_lid", ary.join());
-				}
+			})
 			
-			}
-		})
+			$(line_obj).remove();
 		
-		$(line_obj).remove();
-		
+		}
+	
 	}
 	$(p).remove();
 }
@@ -911,4 +971,86 @@ function addPointObj() {
 	pointObjIndex++;
 }
 
+function displayUpPos() {
+	$(".point").each(function() {
+		
+		var ch_lid = $(this).attr("ch_lid");
+		var lid = $(this).attr("lid");
+		
+		if((ch_lid != undefined && ch_lid != "" ) && (lid != undefined && lid != "" ) )
+		{
+					
+			var line_ch_lid_ary = ch_lid.split(",");
+			
+			for(var i = 0; i < line_ch_lid_ary.length; i++)
+			{
+				
+				var line = $(".line[ch_lid=" + line_ch_lid_ary[i] + "]");
+				//隱藏line
+				$(line).css({
+					'display' : 'none'
+				})
+			}
+			
+		}
+		
+		if((ch_lid != undefined && ch_lid != "" ) && (lid == undefined || lid == "" ) )
+		{
+					
+			var line_ch_lid_ary = ch_lid.split(",");
+			
+			for(var i = 0; i < line_ch_lid_ary.length; i++)
+			{
+				
+				var line = $(".line[ch_lid=" + line_ch_lid_ary[i] + "]");
+				//隱藏line
+				$(line).animate({
+					'opacity' : '0'
+				},function() {
+					$(this).css({
+						'display' : 'none'
+					})
+				})
+			}
+			
+			//隱藏point
+			$(this).animate({
+				'opacity' : '0'
+			},function() {
+				$(this).css({
+					'display' : 'none'
+				})
+			})
+			
+		}
+		
+		
+	})
+} 
 
+function displayDownPos() {
+	
+	$(".point").each(function() {
+		if($(this).css("display") == 'none')
+		{
+			$(this).css({
+				'display' : 'block'
+			})
+			$(this).animate({
+				'opacity' : '1'
+			})
+		}
+	})
+		
+	$(".line").each(function() {
+		if($(this).css("display") == 'none')
+		{
+			$(this).css({
+				'display' : 'block'
+			})
+			$(this).animate({
+				'opacity' : '1'
+			})
+		}
+	})
+}
