@@ -55,6 +55,9 @@ var ADD_CHILD_LINK = 2
 var REMOVE_LINK = 3;
 var REMOVE_CHILD_LINK = 4;
 
+//test
+var test_json;
+
 $(function() {
 	
 	$(".point1").css({
@@ -177,6 +180,14 @@ $(function() {
 		displayDownPos();
 	})
 	
+	$(".saveBtn").click(function() {
+		encodeJson();
+	})
+	
+	$(".readBtn").click(function() {
+		decodeJson();
+	})
+		
 })
 
 function mouseDown(){
@@ -202,7 +213,7 @@ function pointClick(obj) {
 				pointLinkObj(obj);
 				
 			}
-		break;
+		break;	
 		case ADD_CHILD_LINK:
 			if(linkBoo == true)
 			{
@@ -246,8 +257,6 @@ function setPointVar() {
 
 function pointLinkObj(obj) {
 	link1Obj = addLinkObj;
-	$(".msg").text("從目前的節點連結到？");
-	//linkObjIndex++;
 	
 	$(link1Obj).css({
 		'background' : '#f0f0f0'
@@ -784,6 +793,8 @@ function setLine(lineId, p1, p2) {
 		'transform' : 'rotate(' + get2PointZRotate($(p1obj), $(p2obj)) + 'deg)'
 	})
 	
+	$(line).attr("deg", get2PointZRotate($(p1obj), $(p2obj)));
+	
 }
 
 function setChildLine(lineId, p1, p2) {
@@ -803,6 +814,8 @@ function setChildLine(lineId, p1, p2) {
 		'top' : get2PointYCenter($(p1obj), $(p2obj)),
 		'transform' : 'rotate(' + get2PointZRotate($(p1obj), $(p2obj)) + 'deg)'
 	})
+	
+	$(line).attr("deg", get2PointZRotate($(p1obj), $(p2obj)));
 	
 }
 
@@ -1054,3 +1067,170 @@ function displayDownPos() {
 		}
 	})
 }
+
+/**
+ * save to json 
+ */
+
+function encodeJson() {
+	var ary = new Array();
+	
+	$(".canvas").find("div").each(function() {
+		var obj = new Object();
+		
+		if($(this).hasClass("line") && $(this).hasClass("chLine") )
+		{
+			obj.type = "chLine";
+			obj.ch_lid = $(this).attr("ch_lid");
+			obj.cid = $(this).attr("cid");
+			obj.tid = $(this).attr("tid");
+			obj.width = $(this).width();
+			obj.deg = $(this).attr("deg");
+		}
+		else if($(this).hasClass("line") )
+		{
+			obj.type = "line";
+			obj.lid = $(this).attr("lid");
+			obj.cid = $(this).attr("cid");
+			obj.tid = $(this).attr("tid");
+			obj.width = $(this).width();
+			obj.deg = $(this).attr("deg");
+		}
+		else if($(this).hasClass("point"))
+		{
+			obj.type = "point";
+			obj.pid = $(this).attr("pid");
+			obj.lid = $(this).attr("lid");
+			obj.ch_lid = $(this).attr("ch_lid");
+			obj.text = $(this).text();
+		}
+		
+		obj.x = parseInt($(this).css("left"));
+		obj.y = parseInt($(this).css("top"));
+		
+		ary.push(obj);
+		
+	})
+		
+	var json = JSON.stringify(ary, null, 2);
+	
+	//alert(json);
+	
+	test_json = json;
+	
+	
+}
+
+/**
+ * read for json 
+ */
+
+function decodeJson() {
+	//clear sence
+	$(".canvas").html("");
+	
+	var json = JSON.parse(test_json);
+	
+	for(var i = 0; i < json.length;i++)
+	{
+		if(json[i].type == "line")
+		{
+			readLine(
+				json[i].x,
+				json[i].y,
+				json[i].lid,
+				json[i].cid,
+				json[i].tid,
+				json[i].width,
+				json[i].deg
+			)
+		}
+		else if(json[i].type == "chLine")
+		{
+			readChildLine(
+				json[i].x,
+				json[i].y,
+				json[i].ch_lid,
+				json[i].cid,
+				json[i].tid,
+				json[i].width,
+				json[i].deg
+			)
+		}
+		else if(json[i].type == "point")
+		{
+			readPoint(
+				json[i].x,
+				json[i].y,
+				json[i].pid,
+				json[i].lid,
+				json[i].ch_lid,
+				json[i].text
+			)
+		}
+	}
+	
+}
+
+
+/**
+ * read for json point data
+ *  
+ * @param {Object} x
+ * @param {Object} y
+ * @param {Object} pid
+ * @param {Object} lid
+ * @param {Object} ch_lid
+ */
+function readPoint(x, y, pid, lid, ch_lid, text) {
+	var lid_attr = "";
+	var ch_lid_attr = "";
+	if(lid != undefined && lid != "" )
+	{
+		lid_attr = "lid='" + lid + "'"; 
+	}
+	if(ch_lid != undefined && ch_lid != "" )
+	{
+		ch_lid_attr = "ch_lid='" + ch_lid + "'"; 
+	}
+	
+	$(".canvas").append(
+		"<div class='drag point' style='left:" + x + "px;top: " + y + "px;background-color:#fff' onclick='pointClick(this)'  pid='" + pid + "' " + lid_attr + " " + ch_lid_attr + ">" + text + "</div>"
+	)
+	
+	$(".drag").bind("mousedown", mouseDown);
+	$(".drag").bind("mouseup", mouseUp);
+}
+
+function readLine(x, y ,lid ,cid ,tid,width,deg)
+{
+	
+	$(".canvas").append(
+		"<div class='line' style='width:" + width + "px;left:" + x + "px;top:" + y + "px;' lid='" + lid + "' cid='" + cid + "' tid='" + tid + "'></div>"
+	);
+	
+	var line = $(".line[lid=" + lid +"]");
+	
+	$(line).css({
+		'transform': 'rotate(' + deg + 'deg)'
+	})
+		
+}
+
+function readChildLine(x, y ,ch_lid ,cid ,tid,width,deg)
+{
+	
+	$(".canvas").append(
+		"<div class='line chLine' style='width:" + width + "px;left:" + x + "px;top:" + y + "px;' ch_lid='" + ch_lid + "' cid='" + cid + "' tid='" + tid + "'></div>"
+	);
+	
+	var line = $(".line[ch_lid=" + ch_lid +"]");
+	
+	$(line).css({
+		'transform': 'rotate(' + deg + 'deg)'
+	})
+		
+}
+
+
+
